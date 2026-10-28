@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة محاسب الفرع - إدارة واعتماد التمويل</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; }
+        .glass-card { background: rgba(30, 41, 59, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="text-slate-100 p-4 md:p-8 flex items-center justify-center">
+
+    <div class="w-full max-w-xl mx-auto">
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600/20 text-indigo-400 mb-3 border border-indigo-500/30">
+                <i class="fa-solid fa-user-shield text-3xl"></i>
+            </div>
+            <h1 class="text-2xl font-extrabold text-white">لوحة محاسب الفرع (الخلفية)</h1>
+            <p class="text-slate-400 text-sm mt-1">مراجعة طلبات التمويل المرفوعة وتحديد سعر الفائدة المخصص</p>
+        </div>
+
+        <div class="glass-card rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
+            <!-- Search Box -->
+            <div>
+                <label class="block text-xs font-bold text-slate-300 mb-2">أدخل كود المتابعة المخصص للعميل</label>
+                <div class="flex gap-2">
+                    <input type="text" id="input-search-code" placeholder="مثال: LOAN-4829" class="flex-1 bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono uppercase focus:outline-none focus:border-indigo-500 text-base">
+                    <button id="btn-search" onclick="searchClientApplication()" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition">
+                        <i class="fa-solid fa-magnifying-glass me-1"></i> بحث
+                    </button>
+                </div>
+            </div>
+
+            <!-- Client Review Card -->
+            <div id="accountant-review-section" class="hidden space-y-4 pt-4 border-t border-slate-700">
+                <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 space-y-2 text-sm">
+                    <div class="flex justify-between text-slate-300">
+                        <span>رقم هاتف العميل:</span>
+                        <span id="acc-client-phone" class="font-bold text-indigo-300 font-mono">--</span>
+                    </div>
+                    <div class="flex justify-between text-slate-300">
+                        <span>القروض القائمة:</span>
+                        <span id="acc-q1" class="font-bold text-white">--</span>
+                    </div>
+                    <div class="flex justify-between text-slate-300">
+                        <span>مستندات النشاط:</span>
+                        <span id="acc-q2" class="font-bold text-white">--</span>
+                    </div>
+                    <div class="flex justify-between text-slate-300">
+                        <span>قيمة التمويل المطلوب:</span>
+                        <span id="acc-q3" class="font-bold text-white">--</span>
+                    </div>
+                    <div class="flex justify-between text-slate-300">
+                        <span>مدة التمويل:</span>
+                        <span id="acc-q4" class="font-bold text-white">--</span>
+                    </div>
+                    <div class="flex justify-between text-slate-300 pt-2 border-t border-slate-800">
+                        <span>مؤشر التقييم الداخلي:</span>
+                        <span id="acc-score" class="font-bold text-emerald-400 font-mono">-- / 100</span>
+                    </div>
+                </div>
+
+                <!-- Product Selection & Interest Rate -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">اختر المنتج التمويلي المعتمد (من الخيارات الـ 5)</label>
+                        <select id="select-approved-product" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500">
+                            <option value="برنامج التمويل السريع المتناهي الصغر">برنامج التمويل السريع (متناهي الصغر)</option>
+                            <option value="برنامج تمويل الأصول والآلات الثابتة">برنامج تمويل الأصول والآلات (ثابتة)</option>
+                            <option value="برنامج رأس المال العامل المرن">برنامج رأس المال العامل المرن</option>
+                            <option value="برنامج التمويل التجاري الموسع">برنامج التمويل التجاري الموسع</option>
+                            <option value="برنامج تمويل المشروعات الناشئة الخاص">برنامج تمويل المشروعات الناشئة الخاص</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">تحديد معدل الفائدة المخصص (%)</label>
+                        <input type="text" id="input-custom-interest" value="12.5%" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-indigo-500">
+                    </div>
+
+                    <button onclick="approveAndSendToClient()" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> اعتماد النتيجة وإرسال الواتساب للعميل
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const FIREBASE_URL = "https://anaelmasry-default-rtdb.firebaseio.com";
+        let activeLoadedClient = null;
+
+        async function searchClientApplication() {
+            const codeInput = document.getElementById('input-search-code').value.trim().toUpperCase();
+            if (!codeInput) {
+                alert('يرجى إدخال كود المتابعة أولاً.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-search');
+            btn.innerText = "جاري البحث...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${FIREBASE_URL}/loans/${codeInput}.json`);
+                let data = await response.json();
+
+                // في حال عدم وجوده سحابياً، يفحص النسخة المحلية كاحتياط
+                if (!data) {
+                    const localData = localStorage.getItem(`client_${codeInput}`);
+                    if (localData) data = JSON.parse(localData);
+                }
+
+                if (!data) {
+                    alert('لم يتم العثور على طلب بهذا الكود. تأكد من صحة الرمز ورقم الطلب.');
+                    document.getElementById('accountant-review-section').classList.add('hidden');
+                    return;
+                }
+
+                activeLoadedClient = data;
+
+                document.getElementById('acc-client-phone').innerText = activeLoadedClient.phone;
+                document.getElementById('acc-q1').innerText = activeLoadedClient.q1;
+                document.getElementById('acc-q2').innerText = activeLoadedClient.q2;
+                document.getElementById('acc-q3').innerText = activeLoadedClient.q3;
+                document.getElementById('acc-q4').innerText = activeLoadedClient.q4;
+                document.getElementById('acc-score').innerText = `${activeLoadedClient.score} / 100`;
+
+                document.getElementById('accountant-review-section').classList.remove('hidden');
+            } catch (err) {
+                console.error(err);
+                alert('حدث خطأ أثناء الاتصال بالخادم.');
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-magnifying-glass me-1"></i> بحث';
+                btn.disabled = false;
+            }
+        }
+
+        function approveAndSendToClient() {
+            if (!activeLoadedClient) return;
+
+            const selectedProduct = document.getElementById('select-approved-product').value;
+            const customInterest = document.getElementById('input-custom-interest').value;
+
+            let phone = activeLoadedClient.phone.replace(/\s+/g, '');
+            if (phone.startsWith('01')) phone = '2' + phone;
+
+            const text = `مرحباً بك! تم اعتماد طلب التمويل الخاص بك (${activeLoadedClient.code}).\nالمنتج المعتمد: ${selectedProduct}\nمعدل الفائدة المخصص: ${customInterest}\nشكراً لتواصلكم معنا.`;
+            
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+        }
+    </script>
+</body>
+</html>
